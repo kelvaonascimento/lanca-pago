@@ -1,16 +1,60 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Plus, Rocket } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Plus, Rocket, Trash2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { prisma } from '@/lib/prisma'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { formatCurrency } from '@/lib/utils'
+import { toast } from 'sonner'
 
-export default async function LancamentosPage() {
-  const launches = await prisma.launch.findMany({
-    orderBy: { updatedAt: 'desc' },
-    include: { ticketBatches: true },
-  })
+interface Launch {
+  id: string
+  name: string
+  niche: string
+  expert: string
+  status: string
+  phase: number
+  targetTickets: number
+  budget: number
+  maxCpa: number
+}
+
+export default function LancamentosPage() {
+  const router = useRouter()
+  const [launches, setLaunches] = useState<Launch[]>([])
+  const [loading, setLoading] = useState(true)
+  const [deleteTarget, setDeleteTarget] = useState<Launch | null>(null)
+  const [deleting, setDeleting] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/launches')
+      .then((r) => r.json())
+      .then((data) => setLaunches(data))
+      .finally(() => setLoading(false))
+  }, [])
+
+  async function handleDelete() {
+    if (!deleteTarget) return
+    setDeleting(true)
+    try {
+      await fetch(`/api/launches/${deleteTarget.id}`, { method: 'DELETE' })
+      setLaunches((prev) => prev.filter((l) => l.id !== deleteTarget.id))
+      toast.success('Lançamento deletado')
+      setDeleteTarget(null)
+    } catch {
+      toast.error('Erro ao deletar')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  if (loading) {
+    return <div className="flex items-center justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-2 border-violet-400 border-t-transparent" /></div>
+  }
 
   return (
     <div className="space-y-6">
@@ -37,10 +81,22 @@ export default async function LancamentosPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {launches.map((launch) => (
-            <Link key={launch.id} href={`/lancamentos/${launch.id}`}>
-              <Card className="transition-all hover:border-primary/50 hover:shadow-md cursor-pointer h-full">
+            <Card key={launch.id} className="transition-all hover:border-primary/50 hover:shadow-md h-full group relative">
+              <button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setDeleteTarget(launch)
+                }}
+                className="absolute top-3 right-3 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/10 cursor-pointer z-10"
+                title="Deletar lançamento"
+              >
+                <Trash2 className="h-4 w-4 text-red-400" />
+              </button>
+
+              <Link href={`/lancamentos/${launch.id}`} className="block h-full">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between pr-6">
                     <CardTitle className="text-base">{launch.name}</CardTitle>
                     <Badge variant={launch.status === 'active' ? 'default' : launch.status === 'completed' ? 'success' : 'secondary'}>
                       {launch.status === 'active' ? 'Ativo' : launch.status === 'completed' ? 'Concluído' : 'Rascunho'}
@@ -68,11 +124,31 @@ export default async function LancamentosPage() {
                     </div>
                   </div>
                 </CardContent>
-              </Card>
-            </Link>
+              </Link>
+            </Card>
           ))}
         </div>
       )}
+
+      {/* Delete confirmation dialog */}
+      <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Deletar lançamento</DialogTitle>
+            <DialogDescription>
+              Tem certeza que deseja deletar <strong>{deleteTarget?.name}</strong>? Todos os dados (checklist, cronograma, conteúdos IA) serão removidos permanentemente.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setDeleteTarget(null)} disabled={deleting}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting} className="gap-1.5">
+              {deleting ? 'Deletando...' : <><Trash2 className="h-3.5 w-3.5" /> Deletar</>}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
