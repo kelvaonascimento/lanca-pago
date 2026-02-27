@@ -1,0 +1,205 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Launch {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Projeto
+  name       String
+  niche      String
+  expert     String
+  followers  Int      @default(0)
+  bigIdea    String   @default("")
+  narrative  String   @default("")
+  theme      String   @default("")
+
+  // Metas
+  targetTickets  Int
+  budget         Float
+  saleDays       Int      @default(15)
+  eventDate      DateTime
+  eventDuration  Int      @default(3) // horas
+  eventPlatform  String   @default("zoom")
+
+  // Métricas calculadas
+  maxCpa       Float    @default(0)
+  dailyPacing  Float    @default(0)
+
+  // Status
+  status    String   @default("draft") // draft, active, completed
+  phase     Int      @default(0)       // 0-4
+
+  // Métricas reais
+  totalSold      Int    @default(0)
+  totalRevenue   Float  @default(0)
+  totalAdSpend   Float  @default(0)
+  currentCpa     Float  @default(0)
+
+  // Relações
+  ticketBatches    TicketBatch[]
+  products         Product[]
+  orderBumps       OrderBump[]
+  steps            LaunchStep[]
+  communications   Communication[]
+  dailyMetrics     DailyMetric[]
+  generatedContent GeneratedContent[]
+  clickUpExports   ClickUpExport[]
+}
+
+model TicketBatch {
+  id        String @id @default(cuid())
+  launchId  String
+  launch    Launch @relation(fields: [launchId], references: [id], onDelete: Cascade)
+
+  name      String   // "Lote 1", "Lote 2"...
+  order     Int
+  price     Float
+  quantity  Int
+  sold      Int      @default(0)
+  status    String   @default("upcoming") // upcoming, active, sold_out, closed
+  startsAt  DateTime?
+  endsAt    DateTime?
+}
+
+model Product {
+  id        String @id @default(cuid())
+  launchId  String
+  launch    Launch @relation(fields: [launchId], references: [id], onDelete: Cascade)
+
+  type      String   // main, downsell, tripwire
+  name      String
+  price     Float
+  sold      Int      @default(0)
+}
+
+model OrderBump {
+  id        String @id @default(cuid())
+  launchId  String
+  launch    Launch @relation(fields: [launchId], references: [id], onDelete: Cascade)
+
+  name         String   // gravacoes, debriefing, materiais, combo
+  label        String   // Label na página
+  price        Float
+  sold         Int      @default(0)
+  hasCashback  Boolean  @default(false)
+  cashbackAmount Float  @default(0)
+}
+
+model LaunchStep {
+  id        String @id @default(cuid())
+  launchId  String
+  launch    Launch @relation(fields: [launchId], references: [id], onDelete: Cascade)
+
+  stepKey   String   // "phase0_step1"
+  phase     Int
+  order     Int
+  status    String   @default("pending") // pending, in_progress, completed
+  notes     String   @default("")
+  completedAt DateTime?
+
+  items     StepItem[]
+}
+
+model StepItem {
+  id          String     @id @default(cuid())
+  stepId      String
+  step        LaunchStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
+
+  label       String
+  completed   Boolean    @default(false)
+  order       Int
+}
+
+model Communication {
+  id        String @id @default(cuid())
+  launchId  String
+  launch    Launch @relation(fields: [launchId], references: [id], onDelete: Cascade)
+
+  day       Int      // Dia relativo (1-44)
+  date      DateTime
+  channel   String   // email, whatsapp, instagram, stories, ads
+  type      String   // lembrete, pitch, virada_lote, encerramento, conteudo
+  title     String
+  content   String   @default("")
+  status    String   @default("pending") // pending, sent, skipped
+
+  approvedContentId String?           @unique
+  approvedContent   GeneratedContent? @relation(fields: [approvedContentId], references: [id])
+}
+
+model DailyMetric {
+  id        String @id @default(cuid())
+  launchId  String
+  launch    Launch @relation(fields: [launchId], references: [id], onDelete: Cascade)
+
+  date      DateTime
+  day       Int
+  ticketsSold Int    @default(0)
+  revenue     Float  @default(0)
+  adSpend     Float  @default(0)
+  cpa         Float  @default(0)
+  ctr         Float  @default(0)
+  cpc         Float  @default(0)
+  leads       Int    @default(0)
+}
+
+model GeneratedContent {
+  id        String @id @default(cuid())
+  launchId  String
+  launch    Launch @relation(fields: [launchId], references: [id], onDelete: Cascade)
+
+  type      String   // copy_pagina, scripts, legendas, emails, whatsapp, briefing
+  subtype   String   @default("") // hook, follow_up, etc
+  prompt    String
+  content   String
+  rating    Int?     // 1-5
+  isApproved Boolean @default(false)
+  createdAt DateTime @default(now())
+
+  communication Communication?
+}
+
+model ClickUpExport {
+  id        String @id @default(cuid())
+  launchId  String
+  launch    Launch @relation(fields: [launchId], references: [id], onDelete: Cascade)
+
+  phase       Int?
+  role        String?
+  taskCount   Int
+  listId      String   @default("")
+  exportedAt  DateTime @default(now())
+  status      String   @default("success")
+}
+
+model Benchmark {
+  id     String @id @default(cuid())
+  niche  String
+  metric String
+  value  Float
+  unit   String @default("")
+  source String @default("")
+}
+
+model CaseStudy {
+  id          String @id @default(cuid())
+  name        String
+  niche       String
+  investment  Float
+  revenue     Float
+  roas        Float
+  tickets     Int    @default(0)
+  ticketPrice Float  @default(0)
+  conversion  Float  @default(0)
+  cpa         Float  @default(0)
+  highlights  String @default("") // JSON array
+  source      String @default("")
+}
