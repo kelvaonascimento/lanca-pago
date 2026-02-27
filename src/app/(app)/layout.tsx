@@ -55,7 +55,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         />
       </div>
 
-      <Sidebar launchId={launchId} collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
+      <Sidebar launchId={launchId} collapsed={collapsed} />
       <div
         className="relative z-10 transition-all duration-300"
         style={{ paddingLeft: collapsed ? 68 : 272 }}

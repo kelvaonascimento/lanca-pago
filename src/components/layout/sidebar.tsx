@@ -13,8 +13,6 @@ import {
   Upload,
   Settings,
   Target,
-  PanelLeftClose,
-  PanelLeftOpen,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
@@ -37,7 +35,6 @@ const launchNavigation = [
 interface SidebarProps {
   launchId?: string
   collapsed: boolean
-  onToggle: () => void
 }
 
 function NavLink({ href, icon: Icon, label, isActive, collapsed }: { href: string; icon: React.ComponentType<{ className?: string }>; label: string; isActive: boolean; collapsed: boolean }) {
@@ -74,7 +71,7 @@ function NavLink({ href, icon: Icon, label, isActive, collapsed }: { href: strin
   return content
 }
 
-export function Sidebar({ launchId, collapsed, onToggle }: SidebarProps) {
+export function Sidebar({ launchId, collapsed }: SidebarProps) {
   const pathname = usePathname()
 
   return (
@@ -159,24 +156,6 @@ export function Sidebar({ launchId, collapsed, onToggle }: SidebarProps) {
             isActive={pathname === '/configuracoes'}
             collapsed={collapsed}
           />
-
-          {/* Toggle button */}
-          <button
-            onClick={onToggle}
-            className={cn(
-              'group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-400 hover:bg-white/[0.06] hover:text-white transition-all duration-200 cursor-pointer border border-transparent',
-              collapsed && 'justify-center px-0'
-            )}
-          >
-            {collapsed ? (
-              <PanelLeftOpen className="h-4 w-4 shrink-0" />
-            ) : (
-              <>
-                <PanelLeftClose className="h-4 w-4 shrink-0" />
-                Fechar menu
-              </>
-            )}
-          </button>
         </div>
       </aside>
     </TooltipProvider>
