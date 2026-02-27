@@ -60,7 +60,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         className="relative z-10 transition-all duration-300"
         style={{ paddingLeft: collapsed ? 68 : 272 }}
       >
-        <Topbar launchName={launchName} />
+        <Topbar launchName={launchName} collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
         <main className="p-6">{children}</main>
       </div>
     </div>

@@ -92,7 +92,7 @@ export function Sidebar({ launchId, collapsed, onToggle }: SidebarProps) {
         </div>
 
         {/* Logo */}
-        <div className={cn('relative flex h-16 items-center gap-3 border-b border-white/10', collapsed ? 'justify-center px-2' : 'px-5')}>
+        <div className={cn('relative z-10 flex h-16 items-center gap-3 border-b border-white/10', collapsed ? 'justify-center px-2' : 'px-5')}>
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 shadow-lg shadow-violet-500/30">
             <Rocket className="h-5 w-5 text-white" />
           </div>
@@ -104,7 +104,7 @@ export function Sidebar({ launchId, collapsed, onToggle }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className={cn('relative flex-1 overflow-y-auto py-4', collapsed ? 'px-2' : 'px-3')}>
+        <nav className={cn('relative z-10 flex-1 overflow-y-auto py-4', collapsed ? 'px-2' : 'px-3')}>
           <div className="space-y-1">
             {navigation.map((item) => {
               const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
@@ -151,7 +151,7 @@ export function Sidebar({ launchId, collapsed, onToggle }: SidebarProps) {
         </nav>
 
         {/* Bottom: Settings + Toggle */}
-        <div className={cn('relative border-t border-white/10 p-3 space-y-1', collapsed && 'px-2')}>
+        <div className={cn('relative z-10 border-t border-white/10 p-3 space-y-1', collapsed && 'px-2')}>
           <NavLink
             href="/configuracoes"
             icon={Settings}
