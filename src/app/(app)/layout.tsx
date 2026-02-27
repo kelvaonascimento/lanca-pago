@@ -9,6 +9,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const params = useParams()
   const launchId = params?.id as string | undefined
   const [launchName, setLaunchName] = useState<string>('')
+  const [collapsed, setCollapsed] = useState(false)
 
   useEffect(() => {
     if (launchId) {
@@ -54,8 +55,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         />
       </div>
 
-      <Sidebar launchId={launchId} />
-      <div className="pl-[var(--sidebar-width)] relative z-10">
+      <Sidebar launchId={launchId} collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
+      <div
+        className="relative z-10 transition-all duration-300"
+        style={{ paddingLeft: collapsed ? 68 : 272 }}
+      >
         <Topbar launchName={launchName} />
         <main className="p-6">{children}</main>
       </div>
