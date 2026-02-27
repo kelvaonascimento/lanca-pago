@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardPage() {
   const launches = await prisma.launch.findMany({
     orderBy: { updatedAt: 'desc' },

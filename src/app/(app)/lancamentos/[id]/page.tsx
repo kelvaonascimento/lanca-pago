@@ -8,6 +8,8 @@ import { prisma } from '@/lib/prisma'
 import { formatCurrency } from '@/lib/utils'
 import { PHASE_NAMES } from '@/types/launch'
 
+export const dynamic = 'force-dynamic'
+
 const moduleColors = [
   { bg: 'bg-violet-500/10', text: 'text-violet-400', hover: 'hover:border-violet-500/20' },
   { bg: 'bg-indigo-500/10', text: 'text-indigo-400', hover: 'hover:border-indigo-500/20' },
